@@ -2,33 +2,100 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <title>Push-ups 2026</title>
+  <title>2026 目标与状态</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif; padding: 12px; }
+
+    /* Tabs */
+    .tabs { display: flex; gap: 8px; margin: 10px 0 16px; }
+    .tab-btn { border: 1px solid #e5e7eb; background: #fff; border-radius: 12px; padding: 8px 12px; cursor: pointer; font-weight: 800; }
+    .tab-btn.active { border-color: #111827; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* Generic */
+    .card { border: 1px solid #e5e7eb; border-radius: 14px; padding: 12px; margin: 10px 0 14px; }
+    .row { margin: 8px 0; }
+
+    ul { padding-left: 18px; margin: 8px 0; }
+    .log-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 2px 0;              /* 紧凑 */
+    }
+    .log-text {
+      flex: 1;
+      line-height: 1.35;           /* 紧凑但可读 */
+      word-break: break-word;
+    }
+
+    .btn { border: 1px solid #e5e7eb; background: #fff; border-radius: 10px; padding: 6px 10px; cursor: pointer; font-weight: 800; }
+    .btn-danger { color: #dc2626; }
+    .btn-primary { color: #111827; }
+
+    textarea { width: 100%; box-sizing: border-box; border: 1px solid #e5e7eb; border-radius: 12px; padding: 10px; }
+    input[type="number"], input[type="date"], select {
+      border: 1px solid #e5e7eb; border-radius: 10px; padding: 6px 10px;
+    }
+
+    /* Pushups stats */
+    #gapBadge { font-weight: 800; margin-left: 10px; }
+    .gap-ahead { color: #16a34a; }
+    .gap-behind { color: #dc2626; }
+    .gap-on { color: #6b7280; }
+
+    /* Status color */
+    .green { color: #16a34a; font-weight: 800; }
+    .blue  { color: #2563eb; font-weight: 800; }
+    .yellow{ color: #ca8a04; font-weight: 800; }
+    .red   { color: #dc2626; font-weight: 800; }
+    .muted { color: #6b7280; font-weight: 700; }
+    .dim   { color: #6b7280; }
+
+    /* Chips */
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+    .chip { border: 1px solid #e5e7eb; border-radius: 999px; padding: 6px 10px; cursor: pointer; user-select: none; font-weight: 700; }
+    .chip.selected { border-color: #111827; }
+  </style>
 </head>
 <body>
-  <h1>2026 俯卧撑记录</h1>
-<div>
-  <label>
-    年度目标：
-    <input id="goal" type="number" value="8000" min="1" />
-  </label>
+
+<h1>2026 目标与状态</h1>
+
+<div class="tabs">
+  <button class="tab-btn active" data-tab="pushups">俯卧撑记录</button>
+  <button class="tab-btn" data-tab="status">今日状态</button>
 </div>
 
-<p id="stats">统计加载中…</p>
-  <h2>新增一次记录</h2>
+<!-- TAB 1: Pushups -->
+<section id="tab-pushups" class="tab-panel active">
+  <h2>俯卧撑</h2>
+
+  <div class="row">
+    <label>
+      年度目标：
+      <input id="goal" type="number" value="8000" min="1" />
+    </label>
+  </div>
+
+  <p id="stats">
+    统计加载中…
+    <span id="gapBadge"></span>
+  </p>
+
+  <h3>新增一次记录</h3>
 
   <form>
-    <div>
-      <label>
-        日期：
-        <input id="date" type="date" />
-      </label>
+    <div class="row">
+      <label>日期：<input id="date" type="date" /></label>
     </div>
 
-    <div>
-      <label>
-        场景：
-       <select id="scene">
+    <div class="row">
+      <label>场景：
+        <select id="scene">
           <option>厕所</option>
           <option>家里</option>
           <option>户外</option>
@@ -37,9 +104,8 @@
       </label>
     </div>
 
-    <div>
-      <label>
-        类型：
+    <div class="row">
+      <label>类型：
         <select id="type">
           <option>跪姿俯卧撑</option>
           <option>站姿俯卧撑</option>
@@ -48,68 +114,314 @@
       </label>
     </div>
 
-    <div>
-      <label>
-        完成个数：
-        <input id="count" type="number" placeholder="例如 20" />
+    <div class="row">
+      <label>完成个数：<input id="count" type="number" placeholder="例如 20" /></label>
+    </div>
+
+    <button id="saveBtn" class="btn btn-primary" type="button">保存记录</button>
+  </form>
+
+  <h3>记录列表</h3>
+  <ul id="logList"></ul>
+</section>
+
+<!-- TAB 2: Status -->
+<section id="tab-status" class="tab-panel">
+  <h2>今日状态</h2>
+
+  <div class="card">
+    <div class="row">
+      <label>日期：<input id="statusDate" type="date" /></label>
+    </div>
+
+    <h3>身体</h3>
+    <div class="row">
+      <label>身体状态：
+        <select id="bodyState">
+          <option value="">请选择</option>
+          <option>精力充沛</option>
+          <option>正常</option>
+          <option>不适</option>
+          <option>非常不适</option>
+        </select>
       </label>
     </div>
 
-    <button id="saveBtn" type="button">保存记录</button>
-  </form>
-<h2>记录列表</h2>
-<ul id="logList"></ul>
+    <div class="row">
+      <label>睡眠小时：<input id="sleepHours" type="number" step="0.5" placeholder="例如 6.5" /></label>
+    </div>
+
+    <div class="row">
+      <div>症状（可多选）：</div>
+      <div id="symptomChips" class="chips"></div>
+    </div>
+
+    <div class="row">
+      <label>身体备注：</label>
+      <textarea id="bodyNote" rows="2" placeholder="可选"></textarea>
+    </div>
+
+    <h3>心情</h3>
+    <div class="row">
+      <label>心情状态：
+        <select id="moodState">
+          <option value="">请选择</option>
+          <option>很好</option>
+          <option>好</option>
+          <option>一般</option>
+          <option>较差</option>
+          <option>非常差</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="row">
+      <div>情绪（可多选）：</div>
+      <div id="moodChips" class="chips"></div>
+    </div>
+
+    <div class="row">
+      <label>心情备注：</label>
+      <textarea id="moodNote" rows="2" placeholder="可选"></textarea>
+    </div>
+
+    <button id="saveStatusBtn" class="btn btn-primary" type="button">保存今日状态</button>
+  </div>
+
+  <h3>历史记录</h3>
+  <ul id="statusList"></ul>
+</section>
 
 <script>
-  const LS_KEY = "pushups_2026_logs";
+/* ---------- Helpers ---------- */
+function makeId(){ return String(Date.now()) + "_" + Math.random().toString(16).slice(2); }
+function $(id){ return document.getElementById(id); }
 
-  function loadLogs() {
-    const raw = localStorage.getItem(LS_KEY);
-    return raw ? JSON.parse(raw) : [];
-  }
+function setActiveTab(tabName) {
+  document.querySelectorAll(".tab-btn").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.tab === tabName);
+  });
+  document.getElementById("tab-pushups").classList.toggle("active", tabName === "pushups");
+  document.getElementById("tab-status").classList.toggle("active", tabName === "status");
+}
+document.querySelectorAll(".tab-btn").forEach(btn => {
+  btn.addEventListener("click", () => setActiveTab(btn.dataset.tab));
+});
 
-  function saveLogs(logs) {
-    localStorage.setItem(LS_KEY, JSON.stringify(logs));
-  }
+/* ---------- Pushups ---------- */
+const PUSHUPS_KEY = "pushups_2026_logs";
 
-  function render() {
-    const logs = loadLogs();
-    const ul = document.getElementById("logList");
-    ul.innerHTML = "";
-    logs.slice().reverse().forEach(item => {
-      const li = document.createElement("li");
-      li.textContent = `${item.date} | ${item.scene} | ${item.type} | ${item.count}个`;
-      ul.appendChild(li);
-        const goal = Number(document.getElementById("goal").value) || 8000;
-    const total = logs.reduce((sum, x) => sum + (Number(x.count) || 0), 0);
-    const remaining = Math.max(goal - total, 0);
-    const pct = goal > 0 ? Math.min((total / goal) * 100, 100) : 0;
+function loadPushups() {
+  const raw = localStorage.getItem(PUSHUPS_KEY);
+  const logs = raw ? JSON.parse(raw) : [];
+  // 兼容旧数据补 id
+  let changed = false;
+  for (const item of logs) { if (!item.id) { item.id = makeId(); changed = true; } }
+  if (changed) localStorage.setItem(PUSHUPS_KEY, JSON.stringify(logs));
+  return logs;
+}
+function savePushups(logs) { localStorage.setItem(PUSHUPS_KEY, JSON.stringify(logs)); }
 
-    document.getElementById("stats").textContent =
-      `累计完成：${total} 个；还差：${remaining} 个；进度：${pct.toFixed(1)}%`;});
-  }
+function getDayIndex2026() {
+  const today = new Date();
+  const start = new Date(2026, 0, 1);
+  const oneDay = 24 * 60 * 60 * 1000;
+  let dayIndex = Math.floor((today - start) / oneDay) + 1;
+  dayIndex = Math.min(Math.max(dayIndex, 1), 365);
+  return dayIndex;
+}
 
-  document.getElementById("saveBtn").addEventListener("click", () => {
-    const date = document.getElementById("date").value;
-    const scene = document.getElementById("scene").value;
-    const type = document.getElementById("type").value;
-    const count = Number(document.getElementById("count").value);
+function renderPushups() {
+  const logs = loadPushups();
 
-    if (!date) return alert("请选择日期");
-    if (!count || count <= 0) return alert("完成个数需要是正整数");
-
-    const logs = loadLogs();
-    logs.push({ date, scene, type, count });
-    saveLogs(logs);
-
-    document.getElementById("count").value = "";
-    render();
+  // list
+  const ul = $("logList");
+  ul.innerHTML = "";
+  logs.slice().reverse().forEach(item => {
+    const li = document.createElement("li");
+    li.className = "log-item";
+    li.innerHTML = `
+      <div class="log-text">${item.date} | ${item.scene} | ${item.type} | ${item.count}个</div>
+      <button class="btn btn-danger del-btn" type="button" data-id="${item.id}">删除</button>
+    `;
+    ul.appendChild(li);
   });
 
-  // 默认日期=今天
-  document.getElementById("date").valueAsDate = new Date();
+  // stats
+  const goal = Number($("goal").value) || 8000;
+  const total = logs.reduce((sum, x) => sum + (Number(x.count) || 0), 0);
+  const remaining = Math.max(goal - total, 0);
+  const pct = goal > 0 ? Math.min((total / goal) * 100, 100) : 0;
 
-  render();
+  const dayIndex = getDayIndex2026();
+  const shouldDone = (goal / 365) * dayIndex;
+  const gap = total - shouldDone;
+  const gapRounded = Math.round(gap);
+  const gapText = gapRounded > 0 ? `+${gapRounded}` : `${gapRounded}`;
+
+  const gapBadge = $("gapBadge");
+  gapBadge.textContent = `｜时间差：${gapText}（应完成 ${Math.round(shouldDone)}）`;
+  gapBadge.classList.remove("gap-ahead", "gap-behind", "gap-on");
+  if (gapRounded > 0) gapBadge.classList.add("gap-ahead");
+  else if (gapRounded < 0) gapBadge.classList.add("gap-behind");
+  else gapBadge.classList.add("gap-on");
+
+  $("stats").childNodes[0].textContent =
+    `累计完成：${total} 个；还差：${remaining} 个；进度：${pct.toFixed(1)}% `;
+}
+
+$("logList").addEventListener("click", (e) => {
+  const btn = e.target.closest("button.del-btn");
+  if (!btn) return;
+  const id = btn.getAttribute("data-id");
+  if (!id) return;
+
+  const ok = confirm("确定删除这条俯卧撑记录吗？");
+  if (!ok) return;
+
+  savePushups(loadPushups().filter(x => x.id !== id));
+  renderPushups();
+});
+
+$("saveBtn").addEventListener("click", () => {
+  const date = $("date").value;
+  const scene = $("scene").value;
+  const type = $("type").value;
+  const count = Number($("count").value);
+
+  if (!date) return alert("请选择日期");
+  if (!count || count <= 0) return alert("完成个数需要是正整数");
+
+  const logs = loadPushups();
+  logs.push({ id: makeId(), date, scene, type, count });
+  savePushups(logs);
+
+  $("count").value = "";
+  renderPushups();
+});
+
+$("goal").addEventListener("change", renderPushups);
+
+/* ---------- Status ---------- */
+const STATUS_KEY="daily_status_2026";
+const SYMPTOMS=["嗓子不舒服","咳嗽","偏头痛","低热","疲惫","经期","胃不舒服","睡眠不足","其他"];
+const MOODS=["平静","开心","焦虑","烦躁","沮丧","有动力","无力","委屈","愤怒","其他"];
+
+const bodyColor = {
+  "精力充沛":"green",
+  "正常":"blue",
+  "不适":"yellow",
+  "非常不适":"red"
+};
+const moodColor = {
+  "很好":"green",
+  "好":"blue",
+  "一般":"yellow",
+  "较差":"red",
+  "非常差":"red"
+};
+
+function renderChips(id,list){
+  const box=$(id); box.innerHTML="";
+  list.forEach(t=>{
+    const d=document.createElement("div");
+    d.className="chip"; d.textContent=t;
+    d.onclick=()=>d.classList.toggle("selected");
+    box.appendChild(d);
+  });
+}
+function getSelected(id){
+  return [...$(id).querySelectorAll(".chip.selected")].map(x=>x.textContent);
+}
+function loadStatus(){ return JSON.parse(localStorage.getItem(STATUS_KEY)||"[]"); }
+function saveStatus(v){ localStorage.setItem(STATUS_KEY, JSON.stringify(v)); }
+
+function part(label, value) {
+  if (value === null || value === undefined) return "";
+  const s = String(value).trim();
+  return s ? ` ｜ <span class="dim">${label}${s}</span>` : "";
+}
+function listPart(label, arr) {
+  if (!arr || !arr.length) return "";
+  return ` ｜ <span class="dim">${label}${arr.join("、")}</span>`;
+}
+
+function renderStatus(){
+  const ul=$("statusList"); ul.innerHTML="";
+  loadStatus().slice().reverse().forEach(it=>{
+    const li=document.createElement("li");
+    li.className="log-item";
+
+    const bodyCls = bodyColor[it.bodyState] || "muted";
+    const moodCls = moodColor[it.moodState] || "muted";
+
+    const sleepTxt = (it.sleepHours !== null && it.sleepHours !== undefined && String(it.sleepHours).trim() !== "")
+      ? `${it.sleepHours}h` : "";
+
+    const line = `
+      <span class="muted">${it.date || "-"}</span>
+      ｜ 身体：<span class="${bodyCls}">${it.bodyState || "-"}</span>
+      ｜ 心情：<span class="${moodCls}">${it.moodState || "-"}</span>
+      ${part("睡眠：", sleepTxt)}
+      ${listPart("症状：", it.symptoms)}
+      ${listPart("情绪：", it.moods)}
+      ${part("身体备注：", it.bodyNote)}
+      ${part("心情备注：", it.moodNote)}
+    `;
+
+    li.innerHTML = `
+      <div class="log-text">${line}</div>
+      <button class="btn btn-danger status-del" type="button" data-id="${it.id}">删除</button>
+    `;
+
+    ul.appendChild(li);
+  });
+}
+
+$("statusList").addEventListener("click", (e) => {
+  const btn = e.target.closest("button.status-del");
+  if (!btn) return;
+  const id = btn.getAttribute("data-id");
+  if (!id) return;
+
+  const ok = confirm("确定删除这条状态记录吗？");
+  if (!ok) return;
+
+  saveStatus(loadStatus().filter(x => x.id !== id));
+  renderStatus();
+});
+
+$("saveStatusBtn").addEventListener("click", () => {
+  const date = $("statusDate").value;
+  if (!date) return alert("请选择日期");
+
+  const sleepVal = $("sleepHours").value;
+
+  const list = loadStatus();
+  list.push({
+    id: makeId(),
+    date,
+    bodyState: $("bodyState").value,
+    sleepHours: sleepVal ? Number(sleepVal) : null,
+    symptoms: getSelected("symptomChips"),
+    bodyNote: $("bodyNote").value || "",
+    moodState: $("moodState").value,
+    moods: getSelected("moodChips"),
+    moodNote: $("moodNote").value || ""
+  });
+  saveStatus(list);
+  renderStatus();
+  alert("今日状态已保存");
+});
+
+/* ---------- Init ---------- */
+$("date").valueAsDate = new Date();
+$("statusDate").valueAsDate = new Date();
+renderChips("symptomChips", SYMPTOMS);
+renderChips("moodChips", MOODS);
+renderPushups();
+renderStatus();
 </script>
+
 </body>
 </html>
