@@ -58,9 +58,11 @@
     /* Chips */
     .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
     .chip { border: 1px solid #e5e7eb; border-radius: 999px; padding: 6px 10px; cursor: pointer; user-select: none; font-weight: 700; }
-    .chip.selected { border-color: #111827;
-  background: #eef2ff;   /* 高亮底色（浅紫蓝） */
-  color: #111827;        /* 文字更深 */}
+    .chip.selected {
+      border-color: #111827;
+      background: #eef2ff;   /* 高亮底色（浅紫蓝） */
+      color: #111827;        /* 文字更深 */
+    }
   </style>
 </head>
 <body>
@@ -212,6 +214,15 @@ document.querySelectorAll(".tab-btn").forEach(btn => {
 
 /* ---------- Pushups ---------- */
 const PUSHUPS_KEY = "pushups_2026_logs";
+const GOAL_KEY = "pushups_2026_goal";
+
+function loadGoal() {
+  const v = localStorage.getItem(GOAL_KEY);
+  return v ? Number(v) : 8000;
+}
+function saveGoal(goal) {
+  localStorage.setItem(GOAL_KEY, String(goal));
+}
 
 function loadPushups() {
   const raw = localStorage.getItem(PUSHUPS_KEY);
@@ -302,11 +313,16 @@ $("saveBtn").addEventListener("click", () => {
   renderPushups();
 });
 
-$("goal").addEventListener("change", renderPushups);
+/* 目标值：改动即保存 + 重新渲染（刷新也不丢） */
+$("goal").addEventListener("input", () => {
+  const goal = Number($("goal").value) || 8000;
+  saveGoal(goal);
+  renderPushups();
+});
 
 /* ---------- Status ---------- */
 const STATUS_KEY="daily_status_2026";
-const SYMPTOMS=["嗓子不舒服","咳嗽","偏头痛","低热","疲惫","经期","胃不舒服","睡眠不足","其他"];
+const SYMPTOMS=["嗓子痛","嗓子粘稠有痰","咳嗽","偏头痛","低热","疲惫","经期","胃不舒服","睡眠不足","其他"];
 const MOODS=["平静","开心","焦虑","烦躁","沮丧","有动力","无力","委屈","愤怒","其他"];
 
 const bodyColor = {
@@ -419,6 +435,10 @@ $("saveStatusBtn").addEventListener("click", () => {
 /* ---------- Init ---------- */
 $("date").valueAsDate = new Date();
 $("statusDate").valueAsDate = new Date();
+
+/* 关键：初始化时回填年度目标（刷新不丢） */
+$("goal").value = loadGoal();
+
 renderChips("symptomChips", SYMPTOMS);
 renderChips("moodChips", MOODS);
 renderPushups();
